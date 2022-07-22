@@ -233,6 +233,8 @@ class SEN12MS(NonGeoDataset):
         image = torch.cat(tensors=[s1, s2], dim=0)
         image = torch.index_select(image, dim=0, index=self.band_indices)
 
+        sample: Dict[str, Tensor] = {"image": image, "mask": lc}
+
         if self.transforms is not None:
             sample = self.transforms(sample)
 
