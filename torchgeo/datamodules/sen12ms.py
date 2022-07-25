@@ -9,6 +9,9 @@ import pytorch_lightning as pl
 import torch
 from sklearn.model_selection import GroupShuffleSplit
 from torch.utils.data import DataLoader, Subset
+from torch import Tensor
+
+from spectral import principal_components
 
 from ..datasets import SEN12MS
 
@@ -107,6 +110,20 @@ class SEN12MSDataModule(pl.LightningDataModule):
 
         return sample
 
+    def dimension_reduction_pca(self, img: Tensor) -> Tensor:
+
+        print('img', img.shape)
+
+        img = img.numpy().T
+
+        pc = principal_components(img)
+        new_img_pca = pc.reduce(num=10).transform(img)
+
+        print('new_img_pca', torch.from_numpy(new_img_pca.T).shape)
+
+        return torch.from_numpy(new_img_pca.T)
+
+
     def setup(self, stage: Optional[str] = None) -> None:
         """Create the train/val/test splits based on the original Dataset objects.
 
@@ -125,6 +142,7 @@ class SEN12MSDataModule(pl.LightningDataModule):
             self.root_dir,
             split="train",
             bands=self.band_indices,
+            pca=self.dimension_reduction_pca,
             transforms=self.preprocess,
             checksum=False,
         )
@@ -133,6 +151,7 @@ class SEN12MSDataModule(pl.LightningDataModule):
             self.root_dir,
             split="test",
             bands=self.band_indices,
+            pca=self.dimension_reduction_pca,
             transforms=self.preprocess,
             checksum=False,
         )
