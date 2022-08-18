@@ -158,6 +158,7 @@ class RESISC45(NonGeoClassificationDataset):
     def __init__(
         self,
         root: str = "data",
+        indexes: dict = {},
         split: str = "train",
         transforms: Optional[Callable[[Dict[str, Tensor]], Dict[str, Tensor]]] = None,
         download: bool = False,
@@ -174,22 +175,30 @@ class RESISC45(NonGeoClassificationDataset):
             checksum: if True, check the MD5 of the downloaded files (may be slow)
         """
         assert split in self.splits
+        self.indexes = indexes
         self.root = root
         self.download = download
         self.checksum = checksum
         self._verify()
 
         valid_fns = set()
+        print('split -----------------------------', split)
         with open(os.path.join(self.root, f"resisc45-{split}.txt")) as f:
+            ind=0
             for fn in f:
                 valid_fns.add(fn.strip())
+                ind+=1
+            self.indexes[split] = range(ind)
+
         is_in_split: Callable[[str], bool] = lambda x: os.path.basename(x) in valid_fns
 
+      
         super().__init__(
             root=os.path.join(root, self.directory),
             transforms=transforms,
             is_valid_file=is_in_split,
         )
+
 
     def _verify(self) -> None:
         """Verify the integrity of the dataset.

@@ -371,8 +371,9 @@ class BYOLTask(LightningModule):
         # Creates `self.hparams` from kwargs
         self.save_hyperparameters()  # type: ignore[operator]
         self.hyperparams = cast(Dict[str, Any], self.hparams)
-
+        self.lr = kwargs["lr"]
         self.config_task()
+        print("$$$$$$$$$$$ Dans constructeur de BYOL $$$$$$$$$$$$", self.hyperparams)
 
     def forward(self, *args: Any, **kwargs: Any) -> Any:
         """Forward pass of the model.
@@ -396,7 +397,17 @@ class BYOLTask(LightningModule):
         lr = self.hyperparams.get("lr", 1e-4)
         weight_decay = self.hyperparams.get("weight_decay", 1e-6)
         optimizer = optimizer_class(self.parameters(), lr=lr, weight_decay=weight_decay)
-
+        print({
+            "optimizer": optimizer,
+            "lr_scheduler": {
+                "scheduler": ReduceLROnPlateau(
+                    optimizer,
+                    patience=self.hyperparams["learning_rate_schedule_patience"],
+                ),
+                "monitor": "val_loss",
+            },
+        })
+        
         return {
             "optimizer": optimizer,
             "lr_scheduler": {
@@ -449,3 +460,4 @@ class BYOLTask(LightningModule):
 
     def test_step(self, *args: Any, **kwargs: Any) -> Any:
         """No-op, does nothing."""
+        pass

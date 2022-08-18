@@ -106,7 +106,7 @@ class RESISC45DataModule(pl.LightningDataModule):
 
         This method is only called once per run.
         """
-        RESISC45(self.root_dir, checksum=False)
+        RESISC45(self.root_dir, self.indexes, checksum=False)
 
     def setup(self, stage: Optional[str] = None) -> None:
         """Initialize the main ``Dataset`` objects.
@@ -118,16 +118,41 @@ class RESISC45DataModule(pl.LightningDataModule):
         """
         transforms = Compose([self.preprocess])
 
-        self.train_dataset = RESISC45(self.root_dir, "train", transforms=transforms)
-        self.val_dataset = RESISC45(self.root_dir, "val", transforms=transforms)
-        self.test_dataset = RESISC45(self.root_dir, "test", transforms=transforms)
+        self.indexes = {}
 
+        self.train_dataset = RESISC45(self.root_dir, self.indexes, "train", transforms=transforms)
+        print('self.train_dataset ', self.train_dataset )
+        self.val_dataset = RESISC45(self.root_dir, self.indexes, "val", transforms=transforms)
+        self.test_dataset = RESISC45(self.root_dir, self.indexes, "test", transforms=transforms)
+
+        return self.indexes
+
+    
     def train_dataloader(self) -> DataLoader[Any]:
         """Return a DataLoader for training.
 
         Returns:
             training data loader
         """
+
+        # def my_collate(batch):
+        #     data = [item[0] for item in batch]
+        #     target = [item[1] for item in batch]
+        #     #index = [np.ran]
+        #     return torch.Tensor(data), torch.Tensor(target)
+        sampler = torch.utils.data.sampler.BatchSampler(
+        torch.utils.data.sampler.RandomSampler(self.train_dataset),
+        batch_size=self.batch_size,
+        drop_last=False)
+
+        # return DataLoader(
+        #     self.train_dataset,
+        #     sampler=sampler,
+        #     num_workers=self.num_workers,
+        #     shuffle=False,
+        # )
+
+
         return DataLoader(
             self.train_dataset,
             batch_size=self.batch_size,
@@ -141,6 +166,20 @@ class RESISC45DataModule(pl.LightningDataModule):
         Returns:
             validation data loader
         """
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+        sampler = torch.utils.data.sampler.BatchSampler(
+        torch.utils.data.sampler.RandomSampler(self.val_dataset),
+        batch_size=self.batch_size,
+        drop_last=False)
+
+        # return DataLoader(
+        #     self.val_dataset,
+        #     sampler=sampler,
+        #     num_workers=self.num_workers,
+        #     shuffle=False,
+        # )
+
         return DataLoader(
             self.val_dataset,
             batch_size=self.batch_size,
@@ -154,6 +193,8 @@ class RESISC45DataModule(pl.LightningDataModule):
         Returns:
             testing data loader
         """
+        device = torch.device('cuda:0')  # or whatever device/cpu you like
+
         return DataLoader(
             self.test_dataset,
             batch_size=self.batch_size,

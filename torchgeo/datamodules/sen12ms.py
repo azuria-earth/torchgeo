@@ -62,6 +62,7 @@ class SEN12MSDataModule(pl.LightningDataModule):
         band_set: str = "all",
         batch_size: int = 64,
         num_workers: int = 0,
+        pca: bool = False,
         **kwargs: Any,
     ) -> None:
         """Initialize a LightningDataModule for SEN12MS based DataLoaders.
@@ -84,6 +85,7 @@ class SEN12MSDataModule(pl.LightningDataModule):
         self.band_indices = SEN12MS.BAND_SETS[band_set]
         self.batch_size = batch_size
         self.num_workers = num_workers
+        self.pca = pca
 
     def preprocess(self, sample: Dict[str, Any]) -> Dict[str, Any]:
         """Transform a single sample from the Dataset.
@@ -108,20 +110,16 @@ class SEN12MSDataModule(pl.LightningDataModule):
             sample["mask"] = sample["mask"][0, :, :].long()
             sample["mask"] = torch.take(self.DFC2020_CLASS_MAPPING, sample["mask"])
 
+        if self.pca :
+            img = sample["image"].numpy().T
+
+            pc = principal_components(img)
+            new_img_pca = pc.reduce(num=10).transform(img)
+
+            sample["image"] = torch.from_numpy(new_img_pca.T)
+
         return sample
 
-    def dimension_reduction_pca(self, img: Tensor) -> Tensor:
-
-        print('img', img.shape)
-
-        img = img.numpy().T
-
-        pc = principal_components(img)
-        new_img_pca = pc.reduce(num=10).transform(img)
-
-        print('new_img_pca', torch.from_numpy(new_img_pca.T).shape)
-
-        return torch.from_numpy(new_img_pca.T)
 
 
     def setup(self, stage: Optional[str] = None) -> None:
@@ -142,7 +140,6 @@ class SEN12MSDataModule(pl.LightningDataModule):
             self.root_dir,
             split="train",
             bands=self.band_indices,
-            pca=self.dimension_reduction_pca,
             transforms=self.preprocess,
             checksum=False,
         )
@@ -151,7 +148,6 @@ class SEN12MSDataModule(pl.LightningDataModule):
             self.root_dir,
             split="test",
             bands=self.band_indices,
-            pca=self.dimension_reduction_pca,
             transforms=self.preprocess,
             checksum=False,
         )

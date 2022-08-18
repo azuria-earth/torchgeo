@@ -727,7 +727,7 @@ class NonGeoClassificationDataset(NonGeoDataset, ImageFolder):  # type: ignore[m
             data and label at that index
         """
         image, label = self._load_image(index)
-        sample = {"image": image, "label": label}
+        sample = {"index": index, "image": image, "label": label}
 
         if self.transforms is not None:
             sample = self.transforms(sample)
@@ -751,6 +751,9 @@ class NonGeoClassificationDataset(NonGeoDataset, ImageFolder):  # type: ignore[m
             the image
             the image class label
         """
+
+        # print('index ================', index)
+
         img, label = ImageFolder.__getitem__(self, index)
         array: "np.typing.NDArray[np.int_]" = np.array(img)
         tensor = torch.from_numpy(array)

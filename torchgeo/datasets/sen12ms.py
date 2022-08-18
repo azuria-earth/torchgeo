@@ -166,7 +166,6 @@ class SEN12MS(NonGeoDataset):
         root: str = "data",
         split: str = "train",
         bands: Sequence[str] = BAND_SETS["all"],
-        pca: Optional[Callable[Tensor, Tensor]] = None,
         transforms: Optional[Callable[[Dict[str, Tensor]], Dict[str, Tensor]]] = None,
         checksum: bool = False,
     ) -> None:
@@ -200,7 +199,6 @@ class SEN12MS(NonGeoDataset):
 
         self.root = root
         self.split = split
-        self.pca = pca
         self.transforms = transforms
         self.checksum = checksum
 
@@ -235,10 +233,6 @@ class SEN12MS(NonGeoDataset):
 
         image = torch.cat(tensors=[s1, s2], dim=0)
         image = torch.index_select(image, dim=0, index=self.band_indices)
-
-        if self.pca is not None:
-            image = self.pca(image)
-
 
         sample: Dict[str, Tensor] = {"image": image, "mask": lc}
 
