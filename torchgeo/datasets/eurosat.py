@@ -151,6 +151,7 @@ class EuroSAT(NonGeoClassificationDataset):
         with open(os.path.join(self.root, f"eurosat-{split}.txt")) as f:
             for fn in f:
                 valid_fns.add(fn.strip().replace(".jpg", ".tif"))
+
         is_in_split: Callable[[str], bool] = lambda x: os.path.basename(x) in valid_fns
 
         super().__init__(
@@ -171,7 +172,8 @@ class EuroSAT(NonGeoClassificationDataset):
         image, label = self._load_image(index)
 
         image = torch.index_select(image, dim=0, index=self.band_indices)
-        sample = {"image": image, "label": label}
+        #sample = {"image": image, "label": label}
+        sample = {"index": index, "image": image, "label": label}
 
         if self.transforms is not None:
             sample = self.transforms(sample)

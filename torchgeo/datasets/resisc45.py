@@ -268,6 +268,9 @@ class RESISC45(NonGeoClassificationDataset):
 
         .. versionadded:: 0.2
         """
+
+        NonGeoClassificationDataset.__getitem__
+
         image = np.rollaxis(sample["image"].numpy(), 0, 3)
         label = cast(int, sample["label"].item())
         label_class = self.classes[label]

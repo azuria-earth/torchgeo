@@ -116,12 +116,13 @@ class RESISC45DataModule(pl.LightningDataModule):
         Args:
             stage: stage to set up
         """
+
+
         transforms = Compose([self.preprocess])
 
         self.indexes = {}
 
         self.train_dataset = RESISC45(self.root_dir, self.indexes, "train", transforms=transforms)
-        print('self.train_dataset ', self.train_dataset )
         self.val_dataset = RESISC45(self.root_dir, self.indexes, "val", transforms=transforms)
         self.test_dataset = RESISC45(self.root_dir, self.indexes, "test", transforms=transforms)
 
@@ -134,24 +135,6 @@ class RESISC45DataModule(pl.LightningDataModule):
         Returns:
             training data loader
         """
-
-        # def my_collate(batch):
-        #     data = [item[0] for item in batch]
-        #     target = [item[1] for item in batch]
-        #     #index = [np.ran]
-        #     return torch.Tensor(data), torch.Tensor(target)
-        sampler = torch.utils.data.sampler.BatchSampler(
-        torch.utils.data.sampler.RandomSampler(self.train_dataset),
-        batch_size=self.batch_size,
-        drop_last=False)
-
-        # return DataLoader(
-        #     self.train_dataset,
-        #     sampler=sampler,
-        #     num_workers=self.num_workers,
-        #     shuffle=False,
-        # )
-
 
         return DataLoader(
             self.train_dataset,
