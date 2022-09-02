@@ -10,6 +10,8 @@ from .cyclone import CycloneDataModule
 from .deepglobelandcover import DeepGlobeLandCoverDataModule
 from .etci2021 import ETCI2021DataModule
 from .eurosat import EuroSATDataModule
+from .opssat import OPSSATDataModule
+
 from .fair1m import FAIR1MDataModule
 from .inria import InriaAerialImageLabelingDataModule
 from .landcoverai import LandCoverAIDataModule

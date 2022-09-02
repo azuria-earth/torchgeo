@@ -35,6 +35,7 @@ from .esri2020 import Esri2020
 from .etci2021 import ETCI2021
 from .eudem import EUDEM
 from .eurosat import EuroSAT
+from .opssat import OPSSAT
 from .fair1m import FAIR1M
 from .forestdamage import ForestDamage
 from .gbif import GBIF
