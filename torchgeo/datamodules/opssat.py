@@ -23,17 +23,17 @@ class OPSSATDataModule(pl.LightningDataModule):
 
     band_means = torch.tensor(
         [
-            1354.40546513,
-            1118.24399958,
-            1042.92983953,
+            64.59627640221402,
+            106.4276659248155,
+            109.88446258763838,
         ]
     )
 
     band_stds = torch.tensor(
         [
-            245.71762908,
-            333.00778264,
-            395.09249139,
+            44.391600741982636,
+            63.75037871723967,
+            62.00312833009623,
         ]
     )
 
@@ -87,6 +87,7 @@ class OPSSATDataModule(pl.LightningDataModule):
         self.train_dataset = OPSSAT(self.root_dir, "train", transforms=transforms)
         self.val_dataset = OPSSAT(self.root_dir, "val", transforms=transforms)
         self.test_dataset = OPSSAT(self.root_dir, "test", transforms=transforms)
+        
 
     def train_dataloader(self) -> DataLoader[Any]:
         """Return a DataLoader for training.

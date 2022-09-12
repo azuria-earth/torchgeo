@@ -45,8 +45,6 @@ class OPSSAT(NonGeoClassificationDataset):
 
     """
 
-    filename = "EuroSATallBands.zip"
-
     # For some reason the class directories are actually nested in this directory
     base_dir = os.path.join(
         "images")
@@ -105,10 +103,8 @@ class OPSSAT(NonGeoClassificationDataset):
         valid_fns = set()
         with open(os.path.join(self.root, f"opssat-{split}.txt")) as f:
             for fn in f:
-                print('fn', fn)
-                print('fn.strip()', fn.strip())
-                valid_fns.add(fn.strip().replace(".png", ".tif"))
-
+                valid_fns.add(fn[:-1])
+        
         is_in_split: Callable[[str], bool] = lambda x: os.path.basename(x) in valid_fns
 
         super().__init__(
@@ -133,20 +129,12 @@ class OPSSAT(NonGeoClassificationDataset):
         sample = {"index": index, "image": image, "label": label}
 
         if self.transforms is not None:
+          
             sample = self.transforms(sample)
 
         return sample
 
-    # def _check_integrity(self) -> bool:
-    #     """Check integrity of dataset.
-
-    #     Returns:
-    #         True if dataset files are found and/or MD5s match, else False
-    #     """
-    #     # integrity: bool = check_integrity(
-    #     #     os.path.join(self.root, self.filename), self.md5 if self.checksum else None
-    #     # )
-    #     return True
+    
 
     def _verify(self) -> None:
         """Verify the integrity of the dataset.
@@ -161,30 +149,8 @@ class OPSSAT(NonGeoClassificationDataset):
         
         raise RuntimeError("Dataset not found in `root` directory")
 
-        # # Check if zip file already exists (if so then extract)
-        # if self._check_integrity():
-        #     self._extract()
-        #     return
-
-        # # Check if the user requested to download the dataset
-        # if not self.download:
-        #     raise RuntimeError(
-        #         "Dataset not found in `root` directory and `download=False`, "
-        #         "either specify a different `root` directory or use `download=True` "
-        #         "to automatically download the dataset."
-        #     )
-
-        # # Download and extract the dataset
-        # self._download()
-        # self._extract()
-
+      
     
-    def _extract(self) -> None:
-        """Extract the dataset."""
-        filepath = os.path.join(self.root, self.filename)
-        extract_archive(filepath)
-
-
     def plot(
         self,
         sample: Dict[str, Tensor],
