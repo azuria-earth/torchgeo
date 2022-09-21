@@ -101,7 +101,9 @@ class OPSSAT(NonGeoClassificationDataset):
         self._verify()
 
         valid_fns = set()
-        with open(os.path.join(self.root, f"opssat-{split}.txt")) as f:
+        fold = "labels_finetune/" # PRETRAIN PUT:   "/labels_pretrain"
+
+        with open(os.path.join(self.root, fold + f"opssat-{split}.txt")) as f:
             for fn in f:
                 valid_fns.add(fn[:-1])
         
