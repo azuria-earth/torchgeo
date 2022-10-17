@@ -66,6 +66,7 @@ class OPSSAT(NonGeoClassificationDataset):
         self,
         root: str = "data",
         split: str = "train",
+        fold: str= "labels_pretrain/",
         bands: Sequence[str] = BAND_SETS["all"],
         transforms: Optional[Callable[[Dict[str, Tensor]], Dict[str, Tensor]]] = None,
         download: bool = False,
@@ -101,7 +102,7 @@ class OPSSAT(NonGeoClassificationDataset):
         self._verify()
 
         valid_fns = set()
-        fold = "labels_finetune/" # PRETRAIN PUT:   "/labels_pretrain"
+        #fold = "labels_finetune/" # PRETRAIN PUT:   "labels_pretrain/"
 
         with open(os.path.join(self.root, fold + f"opssat-{split}.txt")) as f:
             for fn in f:

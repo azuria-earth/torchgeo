@@ -9,8 +9,9 @@ import matplotlib.pyplot as plt
 import pytorch_lightning as pl
 import torch
 from torch.utils.data import DataLoader
-from torchvision.transforms import Compose, Normalize
+from torchvision.transforms import Compose, Normalize 
 from ..datasets import OPSSAT
+import albumentations as A
 
 
 class OPSSATDataModule(pl.LightningDataModule):
@@ -38,7 +39,7 @@ class OPSSATDataModule(pl.LightningDataModule):
     )
 
     def __init__(
-        self, root_dir: str, batch_size: int = 64, num_workers: int = 0, **kwargs: Any
+        self, root_dir: str, fold: str, batch_size: int = 64, num_workers: int = 0, **kwargs: Any
     ) -> None:
         """Initialize a LightningDataModule for EuroSAT based DataLoaders.
 
@@ -50,9 +51,18 @@ class OPSSATDataModule(pl.LightningDataModule):
         super().__init__()  # type: ignore[no-untyped-call]
         self.root_dir = root_dir
         self.batch_size = batch_size
+        self.fold = fold
         self.num_workers = num_workers
 
         self.norm = Normalize(self.band_means, self.band_stds)
+        self.T  = A.Compose(
+        [
+            A.RandomResizedCrop(224,224),
+            A.ShiftScaleRotate(p=0.2),
+        ]
+        )
+       
+       
 
     def preprocess(self, sample: Dict[str, Any]) -> Dict[str, Any]:
         """Transform a single sample from the Dataset.
@@ -66,6 +76,29 @@ class OPSSATDataModule(pl.LightningDataModule):
         sample["image"] = sample["image"].float()
         sample["image"] = self.norm(sample["image"])
         return sample
+
+    def augmentation(self, sample: Dict[str, Any]) -> Dict[str, Any]:
+        """Transform a single sample from the Dataset.
+
+        Args:
+            sample: input image dictionary
+
+        Returns:
+            preprocessed sample
+        """
+        import numpy as np
+
+    
+        Transform = self.T
+        x = sample["image"]
+        img = np.array(x.permute(1,2,0).cpu())
+        aug = Transform(image=img)["image"].transpose(2,0,1)
+        New_X = torch.from_numpy(aug)
+
+        sample["image"] = New_X
+
+        return sample
+
 
     def prepare_data(self) -> None:
         """Make sure that the dataset is downloaded.
@@ -82,11 +115,12 @@ class OPSSATDataModule(pl.LightningDataModule):
         Args:
             stage: stage to set up
         """
+        transforms_train = Compose([self.preprocess, self.augmentation])
         transforms = Compose([self.preprocess])
 
-        self.train_dataset = OPSSAT(self.root_dir, "train", transforms=transforms)
-        self.val_dataset = OPSSAT(self.root_dir, "val", transforms=transforms)
-        self.test_dataset = OPSSAT(self.root_dir, "test", transforms=transforms)
+        self.train_dataset = OPSSAT(self.root_dir, "train", self.fold, transforms=transforms)
+        self.val_dataset = OPSSAT(self.root_dir, "val", self.fold, transforms=transforms)
+        self.test_dataset = OPSSAT(self.root_dir, "test", self.fold, transforms=transforms)
         
 
     def train_dataloader(self) -> DataLoader[Any]:

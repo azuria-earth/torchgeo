@@ -288,7 +288,7 @@ class BigEarthNet(NonGeoDataset):
         self.bands = bands
         self.num_classes = num_classes
         self.transforms = transforms
-        self.download = download
+        self.download = download       
         self.checksum = checksum
         self.class2idx = {c: i for i, c in enumerate(self.class_sets[43])}
         self._verify()
@@ -305,7 +305,11 @@ class BigEarthNet(NonGeoDataset):
         """
         image = self._load_image(index)
         label = self._load_target(index)
-        sample: Dict[str, Tensor] = {"image": image, "label": label}
+
+        #print('--------- WARNING : BIGEARTHNET is multiclass so we take only the first label as target for SSL method ---------')
+
+        #sample: Dict[str, Tensor] = {"image": image, "label": label}
+        sample: Dict[str, Tensor] = {"index": index, "image": image, "label": label}
 
         if self.transforms is not None:
             sample = self.transforms(sample)
@@ -423,8 +427,12 @@ class BigEarthNet(NonGeoDataset):
             indices_optional = [self.label_converter.get(idx) for idx in indices]
             indices = [idx for idx in indices_optional if idx is not None]
 
-        target = torch.zeros(self.num_classes, dtype=torch.long)
-        target[indices] = 1
+
+        # target = torch.zeros(self.num_classes, dtype=torch.long)
+        # target[indices] = 1
+        import random
+        target = torch.as_tensor(random.randint(0, self.num_classes-1))
+        
         return target
 
     def _verify(self) -> None:
@@ -492,6 +500,9 @@ class BigEarthNet(NonGeoDataset):
             filename: output filename to write downloaded file
             md5: md5 of downloaded file
         """
+        print('filename', filename)
+        print('self.root', self.root)
+        print('url', url)
         if not os.path.exists(filename):
             download_url(
                 url, self.root, filename=filename, md5=md5 if self.checksum else None
