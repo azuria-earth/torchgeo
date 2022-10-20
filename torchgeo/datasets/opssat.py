@@ -46,8 +46,7 @@ class OPSSAT(NonGeoClassificationDataset):
     """
 
     # For some reason the class directories are actually nested in this directory
-    base_dir = os.path.join(
-        "images")
+    base_dir = os.path.join("")
 
     splits = ["train", "val", "test"]
 
@@ -65,6 +64,7 @@ class OPSSAT(NonGeoClassificationDataset):
     def __init__(
         self,
         root: str = "data",
+        root_dir_images_nonhisteq: str = "data",
         split: str = "train",
         fold: str= "labels_pretrain/",
         bands: Sequence[str] = BAND_SETS["all"],
@@ -92,6 +92,7 @@ class OPSSAT(NonGeoClassificationDataset):
            The *bands* parameter.
         """
         self.root = root
+        self.root_dir_images_nonhisteq = root_dir_images_nonhisteq
         self.transforms = transforms
         self.download = download
         self.checksum = checksum
@@ -103,15 +104,17 @@ class OPSSAT(NonGeoClassificationDataset):
 
         valid_fns = set()
         #fold = "labels_finetune/" # PRETRAIN PUT:   "labels_pretrain/"
+        print(self.root)
 
-        with open(os.path.join(self.root, fold + f"opssat-{split}.txt")) as f:
+
+        with open(os.path.join(self.root, f"opssat-{split}.txt")) as f:
             for fn in f:
                 valid_fns.add(fn[:-1])
         
         is_in_split: Callable[[str], bool] = lambda x: os.path.basename(x) in valid_fns
 
         super().__init__(
-            root=os.path.join(root, self.base_dir),
+            root=os.path.join(root_dir_images_nonhisteq),#, self.base_dir),
             transforms=transforms,
             loader=rasterio_loader,
             is_valid_file=is_in_split,
@@ -146,7 +149,7 @@ class OPSSAT(NonGeoClassificationDataset):
             RuntimeError: if ``download=False`` but dataset is missing or checksum fails
         """
         # Check if the files already exist
-        filepath = os.path.join(self.root, self.base_dir)
+        filepath = os.path.join(self.root_dir_images_nonhisteq)#, self.base_dir)
         if os.path.exists(filepath):
             return
         
