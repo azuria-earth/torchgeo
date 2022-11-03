@@ -22,24 +22,25 @@ class OPSSATDataModule(pl.LightningDataModule):
     .. versionadded:: 0.2
     """
 
+
     band_means = torch.tensor(
         [
-            60.04637211,
-            101.57636894,
-            104.77283831,
+            106.5722288467565,
+            103.69059486054529,
+            61.11650003133814,
         ]
     )
 
     band_stds = torch.tensor(
         [
-            37.10114102,
-            54.46382011,
-            52.2372836, 
+            50.76481134071544,
+            53.38607680635177,
+            36.22505469810334, 
         ]
     )
 
     def __init__(
-        self, root_dir: str, root_dir_images_nonhisteq: str, batch_size: int = 64, num_workers: int = 0, **kwargs: Any
+        self, root_dir: str, root_dir_images_train: str, root_dir_images_val: str, fold: str, batch_size: int = 64, num_workers: int = 0, **kwargs: Any
     ) -> None:
         """Initialize a LightningDataModule for EuroSAT based DataLoaders.
 
@@ -50,7 +51,9 @@ class OPSSATDataModule(pl.LightningDataModule):
         """
         super().__init__()  # type: ignore[no-untyped-call]
         self.root_dir = root_dir
-        self.root_dir_images_nonhisteq = root_dir_images_nonhisteq
+        self.root_dir_images_train = root_dir_images_train
+        self.root_dir_images_val = root_dir_images_val
+        self.fold = fold
         self.batch_size = batch_size
         self.num_workers = num_workers
 
@@ -74,7 +77,9 @@ class OPSSATDataModule(pl.LightningDataModule):
             preprocessed sample
         """
         sample["image"] = sample["image"].float()
+
         sample["image"] = self.norm(sample["image"])
+        
         return sample
 
     def augmentation(self, sample: Dict[str, Any]) -> Dict[str, Any]:
@@ -105,7 +110,7 @@ class OPSSATDataModule(pl.LightningDataModule):
 
         This method is only called once per run.
         """
-        OPSSAT(self.root_dir,self.root_dir_images_nonhisteq)
+        OPSSAT(self.root_dir,self.root_dir_images_train, self.root_dir_images_val,self.fold)
 
     def setup(self, stage: Optional[str] = None) -> None:
         """Initialize the main ``Dataset`` objects.
@@ -118,9 +123,9 @@ class OPSSATDataModule(pl.LightningDataModule):
         transforms_train = Compose([self.preprocess, self.augmentation])
         transforms = Compose([self.preprocess])
 
-        self.train_dataset = OPSSAT(self.root_dir,self.root_dir_images_nonhisteq, "train", transforms=transforms)
-        self.val_dataset = OPSSAT(self.root_dir,self.root_dir_images_nonhisteq, "val", transforms=transforms)
-        self.test_dataset = OPSSAT(self.root_dir,self.root_dir_images_nonhisteq, "test", transforms=transforms)
+        self.train_dataset = OPSSAT(self.root_dir,self.root_dir_images_train, self.root_dir_images_val, self.fold, "train", transforms=transforms)
+        self.val_dataset = OPSSAT(self.root_dir,self.root_dir_images_train, self.root_dir_images_val,self.fold, "val", transforms=transforms)
+        self.test_dataset = OPSSAT(self.root_dir,self.root_dir_images_train, self.root_dir_images_val,self.fold, "test", transforms=transforms)
         
 
     def train_dataloader(self) -> DataLoader[Any]:
@@ -158,7 +163,7 @@ class OPSSATDataModule(pl.LightningDataModule):
         return DataLoader(
             self.test_dataset,
             batch_size=self.batch_size,
-            num_workers=self.num_workers,
+            num_workers=self.num_workers, 
             shuffle=False,
         )
 

@@ -156,13 +156,6 @@ class RESISC45DataModule(pl.LightningDataModule):
         batch_size=self.batch_size,
         drop_last=False)
 
-        # return DataLoader(
-        #     self.val_dataset,
-        #     sampler=sampler,
-        #     num_workers=self.num_workers,
-        #     shuffle=False,
-        # )
-
         return DataLoader(
             self.val_dataset,
             batch_size=self.batch_size,
@@ -176,11 +169,13 @@ class RESISC45DataModule(pl.LightningDataModule):
         Returns:
             testing data loader
         """
+        #device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
         device = torch.device('cuda:0')  # or whatever device/cpu you like
 
         return DataLoader(
             self.test_dataset,
-            batch_size=self.batch_size,
+            batch_size=2000, #20% of 31500
             num_workers=self.num_workers,
             shuffle=False,
         )

@@ -210,7 +210,7 @@ class SEN12MSDataModule(pl.LightningDataModule):
         """
         return DataLoader(
             self.test_dataset,
-            batch_size=self.batch_size,
+            batch_size=10000,
             num_workers=self.num_workers,
             shuffle=False,
         )

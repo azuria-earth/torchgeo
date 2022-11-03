@@ -15,6 +15,7 @@ from .geo import NonGeoClassificationDataset
 from .utils import check_integrity, download_url, extract_archive, rasterio_loader
 
 
+
 class OPSSAT(NonGeoClassificationDataset):
     """OPSSAT dataset.
 
@@ -46,7 +47,7 @@ class OPSSAT(NonGeoClassificationDataset):
     """
 
     # For some reason the class directories are actually nested in this directory
-    base_dir = os.path.join("")
+    base_dir = os.path.join("images")
 
     splits = ["train", "val", "test"]
 
@@ -64,9 +65,10 @@ class OPSSAT(NonGeoClassificationDataset):
     def __init__(
         self,
         root: str = "data",
-        root_dir_images_nonhisteq: str = "data",
-        split: str = "train",
+        root_dir_images_train: str = "data",
+        root_dir_images_val: str = "data",
         fold: str= "labels_pretrain/",
+        split: str = "train",
         bands: Sequence[str] = BAND_SETS["all"],
         transforms: Optional[Callable[[Dict[str, Tensor]], Dict[str, Tensor]]] = None,
         download: bool = False,
@@ -92,7 +94,9 @@ class OPSSAT(NonGeoClassificationDataset):
            The *bands* parameter.
         """
         self.root = root
-        self.root_dir_images_nonhisteq = root_dir_images_nonhisteq
+        self.fold = fold
+        self.root_dir_images_train = root_dir_images_train
+        self.root_dir_images_val = root_dir_images_val
         self.transforms = transforms
         self.download = download
         self.checksum = checksum
@@ -104,21 +108,31 @@ class OPSSAT(NonGeoClassificationDataset):
 
         valid_fns = set()
         #fold = "labels_finetune/" # PRETRAIN PUT:   "labels_pretrain/"
-        print(self.root)
+        print('self.root', self.root)
+        print('self.fold', self.fold)
 
 
-        with open(os.path.join(self.root, f"opssat-{split}.txt")) as f:
+        with open(os.path.join(self.root, fold + "/" + f"opssat-{split}.txt")) as f:
             for fn in f:
+                print('fn', fn)
                 valid_fns.add(fn[:-1])
         
         is_in_split: Callable[[str], bool] = lambda x: os.path.basename(x) in valid_fns
 
+        if split == 'train':
+            root_dir_images = root_dir_images_train
+            print('train', root_dir_images)
+        else:
+            root_dir_images = root_dir_images_val
+            print('test', root_dir_images)
+
         super().__init__(
-            root=os.path.join(root_dir_images_nonhisteq),#, self.base_dir),
+            root=root_dir_images, #os.path.join(root_dir_images, self.base_dir),
             transforms=transforms,
             loader=rasterio_loader,
             is_valid_file=is_in_split,
         )
+        
 
     def __getitem__(self, index: int) -> Dict[str, Tensor]:
         """Return an index within the dataset.
@@ -149,10 +163,12 @@ class OPSSAT(NonGeoClassificationDataset):
             RuntimeError: if ``download=False`` but dataset is missing or checksum fails
         """
         # Check if the files already exist
-        filepath = os.path.join(self.root_dir_images_nonhisteq)#, self.base_dir)
-        if os.path.exists(filepath):
-            return
         
+        filepath_train = self.root_dir_images_train#os.path.join(self.root_dir_images)#, self.base_dir)
+        filepath_val = self.root_dir_images_val
+        if (os.path.exists(filepath_train) and os.path.exists(filepath_val)):
+            return
+
         raise RuntimeError("Dataset not found in `root` directory")
 
       

@@ -207,6 +207,9 @@ class RESISC45(NonGeoClassificationDataset):
             RuntimeError: if ``download=False`` but dataset is missing or checksum fails
         """
         # Check if the files already exist
+        print('self.root', self.root)
+        print('self.filename', self.filename)
+        
         filepath = os.path.join(self.root, self.directory)
         if os.path.exists(filepath):
             return
