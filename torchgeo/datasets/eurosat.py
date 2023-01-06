@@ -108,7 +108,7 @@ class EuroSAT(NonGeoClassificationDataset):
         self,
         root: str = "data",
         split: str = "train",
-        bands: Sequence[str] = BAND_SETS["all"],
+        bands: Sequence[str] = BAND_SETS["all"], # A CHANGER EN RGB
         transforms: Optional[Callable[[Dict[str, Tensor]], Dict[str, Tensor]]] = None,
         download: bool = False,
         checksum: bool = False,
@@ -140,6 +140,7 @@ class EuroSAT(NonGeoClassificationDataset):
         assert split in ["train", "val", "test"]
 
         self._validate_bands(bands)
+
         self.bands = bands
         self.band_indices = Tensor(
             [self.all_band_names.index(b) for b in bands if b in self.all_band_names]
@@ -170,7 +171,6 @@ class EuroSAT(NonGeoClassificationDataset):
             data and label at that index
         """
         image, label = self._load_image(index)
-
         image = torch.index_select(image, dim=0, index=self.band_indices)
         #sample = {"image": image, "label": label}
         sample = {"index": index, "image": image, "label": label}

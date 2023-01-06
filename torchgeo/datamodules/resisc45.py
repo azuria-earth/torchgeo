@@ -11,6 +11,7 @@ import pytorch_lightning as pl
 import torch
 from torch.utils.data import DataLoader
 from torchvision.transforms import Compose, Normalize
+import os
 
 from ..datasets import RESISC45
 
@@ -106,6 +107,8 @@ class RESISC45DataModule(pl.LightningDataModule):
 
         This method is only called once per run.
         """
+        self.indexes = {}
+        
         RESISC45(self.root_dir, self.indexes, checksum=False)
 
     def setup(self, stage: Optional[str] = None) -> None:
@@ -175,7 +178,7 @@ class RESISC45DataModule(pl.LightningDataModule):
 
         return DataLoader(
             self.test_dataset,
-            batch_size=2000, #20% of 31500
+            batch_size=1000,#self.batch_size,
             num_workers=self.num_workers,
             shuffle=False,
         )

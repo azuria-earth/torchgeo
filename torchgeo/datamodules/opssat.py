@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import pytorch_lightning as pl
 import torch
 from torch.utils.data import DataLoader
-from torchvision.transforms import Compose, Normalize 
+from torchvision.transforms import Compose, Normalize, Resize
 from ..datasets import OPSSAT
 import albumentations as A
 
@@ -50,6 +50,7 @@ class OPSSATDataModule(pl.LightningDataModule):
             num_workers: The number of workers to use in all created DataLoaders
         """
         super().__init__()  # type: ignore[no-untyped-call]
+        #self.dims = (3, 200, 200)
         self.root_dir = root_dir
         self.root_dir_images_train = root_dir_images_train
         self.root_dir_images_val = root_dir_images_val
@@ -58,12 +59,13 @@ class OPSSATDataModule(pl.LightningDataModule):
         self.num_workers = num_workers
 
         self.norm = Normalize(self.band_means, self.band_stds)
-        self.T  = A.Compose(
-        [
-            A.RandomResizedCrop(224,224),
-            A.ShiftScaleRotate(p=0.2),
-        ]
-        )
+        self.resize = Resize(size=(224,224))
+        # self.T  = A.Compose(
+        # [
+        #     A.RandomResizedCrop(224,224),
+        #     A.ShiftScaleRotate(p=0.2),
+        # ]
+        # )
        
        
 
@@ -79,6 +81,7 @@ class OPSSATDataModule(pl.LightningDataModule):
         sample["image"] = sample["image"].float()
 
         sample["image"] = self.norm(sample["image"])
+        sample["image"] = self.resize(sample["image"])
         
         return sample
 
@@ -120,7 +123,7 @@ class OPSSATDataModule(pl.LightningDataModule):
         Args:
             stage: stage to set up
         """
-        transforms_train = Compose([self.preprocess, self.augmentation])
+        #transforms_train = Compose([self.preprocess, self.augmentation])
         transforms = Compose([self.preprocess])
 
         self.train_dataset = OPSSAT(self.root_dir,self.root_dir_images_train, self.root_dir_images_val, self.fold, "train", transforms=transforms)

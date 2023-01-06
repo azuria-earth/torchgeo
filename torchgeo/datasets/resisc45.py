@@ -183,6 +183,8 @@ class RESISC45(NonGeoClassificationDataset):
 
         valid_fns = set()
         print('split -----------------------------', split)
+        # if split == 'train':
+        #     split = 'train_64' #2 samples per class
         with open(os.path.join(self.root, f"resisc45-{split}.txt")) as f:
             ind=0
             for fn in f:
@@ -207,8 +209,6 @@ class RESISC45(NonGeoClassificationDataset):
             RuntimeError: if ``download=False`` but dataset is missing or checksum fails
         """
         # Check if the files already exist
-        print('self.root', self.root)
-        print('self.filename', self.filename)
         
         filepath = os.path.join(self.root, self.directory)
         if os.path.exists(filepath):

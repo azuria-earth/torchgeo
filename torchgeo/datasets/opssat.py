@@ -108,23 +108,22 @@ class OPSSAT(NonGeoClassificationDataset):
 
         valid_fns = set()
         #fold = "labels_finetune/" # PRETRAIN PUT:   "labels_pretrain/"
-        print('self.root', self.root)
-        print('self.fold', self.fold)
+        print('La ou ya les .txt', self.root)
+        print('fold ou ya les .txt', self.fold)
+        print('root_dir_images_train', root_dir_images_train)
+        print('root_dir_images_val', root_dir_images_val)
 
-
-        with open(os.path.join(self.root, fold + "/" + f"opssat-{split}.txt")) as f:
+        # fold + "/" +
+        with open(os.path.join(self.root, f"opssat-{split}.txt")) as f:
             for fn in f:
-                print('fn', fn)
                 valid_fns.add(fn[:-1])
         
         is_in_split: Callable[[str], bool] = lambda x: os.path.basename(x) in valid_fns
 
         if split == 'train':
             root_dir_images = root_dir_images_train
-            print('train', root_dir_images)
         else:
             root_dir_images = root_dir_images_val
-            print('test', root_dir_images)
 
         super().__init__(
             root=root_dir_images, #os.path.join(root_dir_images, self.base_dir),
@@ -143,9 +142,6 @@ class OPSSAT(NonGeoClassificationDataset):
             data and label at that index
         """
         image, label = self._load_image(index)
-
-        #image = torch.index_select(image, dim=0, index=self.band_indices)
-        #sample = {"image": image, "label": label}
         sample = {"index": index, "image": image, "label": label}
 
         if self.transforms is not None:
@@ -166,6 +162,7 @@ class OPSSAT(NonGeoClassificationDataset):
         
         filepath_train = self.root_dir_images_train#os.path.join(self.root_dir_images)#, self.base_dir)
         filepath_val = self.root_dir_images_val
+
         if (os.path.exists(filepath_train) and os.path.exists(filepath_val)):
             return
 

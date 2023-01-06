@@ -9,10 +9,10 @@ import matplotlib.pyplot as plt
 import pytorch_lightning as pl
 import torch
 from torch.utils.data import DataLoader
-from torchvision.transforms import Compose, Normalize
+from torchvision.transforms import Compose, Normalize, Resize
 
 from ..datasets import EuroSAT
-
+import albumentations as A
 
 class EuroSATDataModule(pl.LightningDataModule):
     """LightningDataModule implementation for the EuroSAT dataset.
@@ -21,6 +21,21 @@ class EuroSATDataModule(pl.LightningDataModule):
 
     .. versionadded:: 0.2
     """
+    # band_means = torch.tensor(
+    #     [
+    #         1118.24399958,
+    #         1042.92983953,
+    #         947.62620298,
+    #     ]
+    # )
+    # band_stds = torch.tensor(
+    #     [
+    #         #245.71762908,
+    #         333.00778264,
+    #         395.09249139,
+    #         593.75055589
+    #     ]
+    # )
 
     band_means = torch.tensor(
         [
@@ -74,6 +89,10 @@ class EuroSATDataModule(pl.LightningDataModule):
         self.num_workers = num_workers
 
         self.norm = Normalize(self.band_means, self.band_stds)
+        self.resize = Resize(size=(224,224))
+
+
+
 
     def preprocess(self, sample: Dict[str, Any]) -> Dict[str, Any]:
         """Transform a single sample from the Dataset.
@@ -84,8 +103,11 @@ class EuroSATDataModule(pl.LightningDataModule):
         Returns:
             preprocessed sample
         """
+
         sample["image"] = sample["image"].float()
         sample["image"] = self.norm(sample["image"])
+        sample["image"] = self.resize(sample["image"])
+
         return sample
 
     def prepare_data(self) -> None:
@@ -104,6 +126,10 @@ class EuroSATDataModule(pl.LightningDataModule):
             stage: stage to set up
         """
         transforms = Compose([self.preprocess])
+        # transforms = A.Compose([
+        #     A.Normalize(mean=self.band_means, std=self.band_stds),
+        #     A.Resize(224,224)
+        # ]).transform
 
         self.train_dataset = EuroSAT(self.root_dir, "train", transforms=transforms)
         self.val_dataset = EuroSAT(self.root_dir, "val", transforms=transforms)
@@ -128,6 +154,7 @@ class EuroSATDataModule(pl.LightningDataModule):
         Returns:
             validation data loader
         """
+
         return DataLoader(
             self.val_dataset,
             batch_size=self.batch_size,
@@ -143,7 +170,7 @@ class EuroSATDataModule(pl.LightningDataModule):
         """
         return DataLoader(
             self.test_dataset,
-            batch_size=self.batch_size,
+            batch_size=1000,#self.batch_size,
             num_workers=self.num_workers,
             shuffle=False,
         )
