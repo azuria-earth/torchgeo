@@ -97,6 +97,8 @@ class BigEarthNetDataModule(pl.LightningDataModule):
         self.batch_size = batch_size
         self.num_workers = num_workers
 
+        print('self.bands', self.bands)
+
         if bands == "all":
             self.mins = self.band_mins[:, None, None]
             self.maxs = self.band_maxs[:, None, None]

@@ -36,6 +36,8 @@ from .etci2021 import ETCI2021
 from .eudem import EUDEM
 from .eurosat import EuroSAT
 from .opssat import OPSSAT
+from .imagenette import Imagenette
+
 from .fair1m import FAIR1M
 from .forestdamage import ForestDamage
 from .gbif import GBIF
@@ -207,6 +209,8 @@ __all__ = (
     "merge_samples",
     "stack_samples",
     "unbind_samples",
+    "OPSSAT", 
+    "Imagenette",
 )
 
 # https://stackoverflow.com/questions/40018681

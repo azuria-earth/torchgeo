@@ -149,6 +149,9 @@ class EuroSAT(NonGeoClassificationDataset):
         self._verify()
 
         valid_fns = set()
+        if split == 'train':
+            split = 'train_32' #2 samples per class
+
         with open(os.path.join(self.root, f"eurosat-{split}.txt")) as f:
             for fn in f:
                 valid_fns.add(fn.strip().replace(".jpg", ".tif"))
@@ -228,6 +231,7 @@ class EuroSAT(NonGeoClassificationDataset):
             md5=self.md5 if self.checksum else None,
         )
         for split in self.splits:
+
             download_url(
                 self.split_urls[split],
                 self.root,

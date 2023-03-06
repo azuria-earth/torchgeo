@@ -11,6 +11,7 @@ from .deepglobelandcover import DeepGlobeLandCoverDataModule
 from .etci2021 import ETCI2021DataModule
 from .eurosat import EuroSATDataModule
 from .opssat import OPSSATDataModule
+from .imagenette import ImagenetteDataModule
 
 from .fair1m import FAIR1MDataModule
 from .inria import InriaAerialImageLabelingDataModule

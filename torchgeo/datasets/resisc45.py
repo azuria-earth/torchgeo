@@ -184,7 +184,7 @@ class RESISC45(NonGeoClassificationDataset):
         valid_fns = set()
         print('split -----------------------------', split)
         # if split == 'train':
-        #     split = 'train_64' #2 samples per class
+        #     split = 'train_8' #2 samples per class
         with open(os.path.join(self.root, f"resisc45-{split}.txt")) as f:
             ind=0
             for fn in f:
